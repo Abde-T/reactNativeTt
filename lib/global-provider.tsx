@@ -3,9 +3,10 @@ import React, { createContext, useContext, ReactNode } from "react";
 import { getCurrentUser } from "./appwrite";
 import { useAppwrite } from "./useAppwrite";
 import { Redirect } from "expo-router";
+import { replace } from "expo-router/build/global-state/routing";
 
 interface GlobalContextType {
-  isLogged: boolean;
+  isLoggedIn: boolean;
   user: User | null;
   loading: boolean;
   refetch: () => void;
@@ -33,12 +34,12 @@ export const GlobalProvider = ({ children }: GlobalProviderProps) => {
     fn: getCurrentUser,
   });
 
-  const isLogged = !!user;
+  const isLoggedIn = !!user;
 
   return (
     <GlobalContext.Provider
       value={{
-        isLogged,
+        isLoggedIn,
         user,
         loading,
         refetch,
