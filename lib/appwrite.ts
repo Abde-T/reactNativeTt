@@ -10,6 +10,8 @@ import {
 } from "react-native-appwrite";
 import * as Linking from "expo-linking";
 import { openAuthSessionAsync } from "expo-web-browser";
+import axios from "axios";
+import { useEffect, useState } from "react";
 
 export const config = {
   platform: "com.jsm.restate",
@@ -22,8 +24,9 @@ export const config = {
   agentsCollectionId: process.env.EXPO_PUBLIC_APPWRITE_AGENTS_COLLECTION_ID,
   propertiesCollectionId:
     process.env.EXPO_PUBLIC_APPWRITE_PROPERTIES_COLLECTION_ID,
-  //bucketId: process.env.EXPO_PUBLIC_APPWRITE_BUCKET_ID,
-};
+  favGamesCollectionId: process.env.EXPO_PUBLIC_APPWRITE_FAV_GAMES_COLLECTION_ID,
+
+  };
 
 export const client = new Client();
 client
@@ -165,3 +168,90 @@ export async function getPropertyById({ id }: { id: string }) {
     return null;
   }
 }
+
+export async function getFeaturedDeals(limit: number = 5) {
+  try {
+    const response = await axios.get(
+      "https://www.cheapshark.com/api/1.0/deals",
+      {
+        params: {
+          pageSize: limit,
+        },
+      }
+    );
+
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching deals:", error);
+    return [];
+  }
+}
+
+export async function getGames(title: string | undefined) {
+  try {
+    const response = await axios.get(
+      "https://www.cheapshark.com/api/1.0/games",
+      {
+        params: {
+          title: title, // User-defined limit for the number of games
+        },
+      }
+    );
+
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching all games:", error);
+    return [];
+  }
+}
+
+export async function getGameById(id: string | undefined) {
+    console.log("id", id);
+  
+  try {
+    const response = await axios.get(
+      `https://www.cheapshark.com/api/1.0/games?id=${id}`
+    );
+    console.log("response", JSON.stringify(response.data, null, 2));
+
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching game by ID:", error);
+    return null;
+  }
+}
+
+export async function getStoreById(storeId: string) {
+  try {
+    const response = await axios.get(
+      "https://www.cheapshark.com/api/1.0/stores"
+    );
+
+    // Find the store by its ID
+    const store = response.data.find(
+      (store: { storeID: string | number }) => String(store.storeID) === storeId
+    );
+
+    if (!store) {
+      return [];
+    }
+
+    return store;
+  } catch (error) {
+    console.error("Error fetching store by ID:", error);
+    return null;
+  }
+}
+
+export async function  fetchFavoriteGames(){
+  try {
+    const response = await databases.listDocuments(
+      config.databaseId!,
+      config.favGamesCollectionId!
+    );
+    return response.documents; // This contains an array of your documents
+  } catch (error) {
+    console.error("Error fetching favorite games:", error);
+    return [];
+  }
+};
